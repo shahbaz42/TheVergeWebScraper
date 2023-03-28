@@ -137,15 +137,6 @@ class VergeScraper:
         self.get_articles_from_json()
         self.save_csv()
         self.save_sqlite()
-    
-    def scheduled_run():
-        """
-        This method is used for running the scraper at regular intervals every day at 12:00 AM
-        """
-        pass
-
-
-        
 
 scraper = VergeScraper()
 scraper.run()
