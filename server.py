@@ -3,6 +3,10 @@ from flask import Flask, jsonify, request
 
 app = Flask(__name__)
 
+@app.route("/")
+def index():
+    return "Server is up"
+
 @app.route("/articles", methods=["GET"])
 def get_articles():
     """
