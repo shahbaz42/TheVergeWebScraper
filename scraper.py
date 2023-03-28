@@ -78,11 +78,12 @@ class VergeScraper:
                 if placeable["type"] != "STORY":
                     continue
                 headline = placeable["title"]
+                id = placeable["uuid"]
                 url = placeable["url"]
                 author = placeable["author"]["fullName"]
                 date = placeable["publishDate"]
                 info = {
-                    "id": len(self.data) + 1,
+                    "id": id,
                     "URL": url,
                     "headline": headline,
                     "author": author,
@@ -97,7 +98,7 @@ class VergeScraper:
         """
         This method saves the scrapped articles in a CSV file "ddmmyyy_verge.csv"
         """
-        filename = f"{datetime.date.today().strftime('%d%m%Y')}_verge.csv"
+        filename = f"scrapped_data/{datetime.date.today().strftime('%d%m%Y')}_verge.csv"
         with open(filename, "w") as f:
             writer = csv.writer(f)
             writer.writerow(["id", "URL", "headline", "author", "date"])
@@ -111,14 +112,19 @@ class VergeScraper:
         conn = sqlite3.connect("verge_articles.db")
         c = conn.cursor()
         c.execute("""CREATE TABLE IF NOT EXISTS articles (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            id TEXT PRIMARY KEY,
             URL TEXT,
             headline TEXT,
             author TEXT,
             date TEXT
         )""")
         for item in self.data:
-            c.execute("INSERT INTO articles ( URL, headline, author, date) VALUES (?, ?, ?, ?)", (item["URL"], item["headline"], item["author"], item["date"]))
+            try :
+                c.execute("INSERT INTO articles ( id, URL, headline, author, date) VALUES (?, ?, ?, ?, ?)", (item["id"], item["URL"], item["headline"], item["author"], item["date"]))
+            except sqlite3.IntegrityError:
+                # if article is alredy present in the database then
+                # do not update 
+                continue
         conn.commit()
         conn.close()
 
@@ -131,6 +137,15 @@ class VergeScraper:
         self.get_articles_from_json()
         self.save_csv()
         self.save_sqlite()
+    
+    def scheduled_run():
+        """
+        This method is used for running the scraper at regular intervals every day at 12:00 AM
+        """
+        pass
+
+
+        
 
 scraper = VergeScraper()
 scraper.run()
